@@ -62,7 +62,8 @@ class NeuralNet():
 
 			nodesNo = self.layers[layer]['nodes']
 			
-			self.layers[layer]['W'] = np.random.randn(nodesNo, prevNodesNo) * 0.01 # initalize randomly to enforce assimetry, multiply by a small number to be closer to hig grad
+			# initalize randomly to enforce assimetry, multiply by a small number to increase grad
+			self.layers[layer]['W'] = np.random.randn(nodesNo, prevNodesNo) * 0.01
 			self.layers[layer]['b'] = np.zeros((nodesNo, 1))
 
 			prevNodesNo = nodesNo
@@ -86,6 +87,4 @@ class NeuralNet():
 		'''
 		Calculates sigmoid function, where x is a number, vector or matrix.
 		'''
-		y = 1 / (1 + np.exp(-x))
-
-		return x
+		return 1 / (1 + np.exp(-x))
