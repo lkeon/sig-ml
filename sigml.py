@@ -87,12 +87,15 @@ class NeuralNet():
 			
 			if activationFcn == 'relu':
 				a = self.relu(z)
+				self.layers[layer]['a'] = a
 
 			elif activationFcn == 'sigmoid':
 				a = self.sigmoid(z)
+				self.layers[layer]['a'] = a
 
 			elif activationFcn == 'tanh':
 				a = np.tanh(z)
+				self.layers[layer]['a'] = a
 
 			else:
 				txt = 'Activation functoin {} in layer {} not valid.'.format(activationFcn, layer)
@@ -103,7 +106,23 @@ class NeuralNet():
 		pass
 
 	def _compute_cost(self):
-		pass
+		'''
+		Compute cost according to the specified cost function.
+		'''
+		a = self.layers[self.layerNo]['a']
+		y = self.y_train
+		m = y.shape[1]
+
+		if self.loss == 'binary_crossentropy':
+			log_probabilities = np.multiply(y, np.log(a)) + np.multiply((1 - y), np.log(1 - a))
+			cost = -1/m * np.sum(log_probabilities)
+
+		else:
+			txt = 'Loss function {} not valid.'.format(self.loss)
+			print(txt)
+
+		return cost
+
 
 	def fit(self, x_train, y_train, epochs=10):
 		pass
