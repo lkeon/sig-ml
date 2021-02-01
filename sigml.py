@@ -13,45 +13,60 @@ class NeuralNet():
     def __init__(self):
         self.layers = 0  # Number of all layers, input and output layers
         self.neurons = []  # List of neurons in each layer
+        self.layerTypes = []  # Layer connectedness types
         self.activations = []  # List of activation functions in each layer
         self.x_train = None
         self.y_train = None
         self.optimizer = None
         self.loss = None
 
-    def add(self, neurons_num,
+    def add(self,
+            neurons_num,
             layer_type='dense',
             activation='relu',
             input_shape=None):
-        '''Add a layer to the neural network and constructs a dictionary of
+        '''Adds a layer to the neural network and constructs a list of
         layers containing all the parameters, hyperarameters and data.
         Input shape is a tuple, with first argument being the number of
         features and the second number of samples.
         '''
         self.layers += 1
         self.neurons.append(neurons_num)
+        self.layerTypes.append(layer_type)
         self.activations.append(activation)
-        if self.layers == 1:
+        if self.layers == 0:
             if input_shape is None:
-                wr.warn('Input shape variable not defined.')
+                raise ValueError('Input shape not defined.')
             else:
+                self.layers += 1
                 self.featureNo = input_shape[0]
                 self.sampleNo = input_shape[1]
+                self.neurons.append(self.featureNo)
+                self.layerTypes.append('dense')
+                self.activations.append('features')
+        self.layers += 1
+        self.neurons.append(neurons_num)
+        self.layerTypes.append(layer_type)
+        self.activations.append(activation)
 
-    def compile(self, loss='binary_crossentropy',
+    def compile(self,
+                loss='binary_crossentropy',
                 optimizer='gradient_descent'):
         '''Compiles the added layers and creates random or zero value
-        matrix placeholders for training process.
+        matrix placeholders for training process. Additional layer is
+        appended at the end according to the specified loss function.
         '''
-        self.loss = loss
-        self.optimizer = optimizer
-
-        if loss == 'binary_crossentropy':
+        if self.loss == 'binary_crossentropy':
             self.layers += 1
             self.neurons.append(1)
+            self.layerTypes.append('dense')
             self.activations.append('sigmoid')
         else:
             raise ValueError('Loss function not recognized.')
+
+        self.biases = [np.zeros((m, 1)) for m in self.neurons[1:]]
+        self.weights = [np.random.randn(m, n) * 0.01 for m, n
+                        in zip(self.neurons[1:], self.neurons[:-1])]
 
         for layer in range(1, self.layers + 1):
             nodesNo = self.layers[layer]['nodes']
@@ -83,7 +98,7 @@ class NeuralNet():
             else:
                 txt = 'Activation functoin {} in layer {} not valid.' \
                     .format(activationFcn, layer)
-                print(txt)
+                raise ValueError(txt)
 
     def _back_propagation(self):
         '''Implements back propagation through all layers.
